@@ -2,9 +2,15 @@ import getopt
 import sys
 import urllib2
 
+#TODO
+# - Have a list of previously downloaded songs
+# - Output directory
+
+
 # https://api.soundcloud.com/explore/v2/electronic
 # https://api.soundcloud.com/explore/v2/electronic?limit=100&offset=0
-def scrape(tag, number):
+# https://api.soundcloud.com/i1/tracks/120859378/streams?client_id=b45b1aa10f1ac2941910a7f0d10f8e28&app_version=fc06c6b8
+def scrape(tag, number, outputDirectory):
 	url = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + number
 	page = urllib2.urlopen(url)
 	data = page.read()
@@ -13,20 +19,23 @@ def scrape(tag, number):
 def main(argv):
 	tag = ''
 	number = 100
+	outputDirectory = "~/"
 	try:
-		opts,args = getopt.getopt(argv, "t:n:", ["tag=","number="])
+		opts,args = getopt.getopt(argv, "t:n:o:", ["tag=","number=","output="])
 	except getopt.GetoptError:
 		print("soundcloud-scraper.py -t <tag> -n <number>")
 		sys.exit(2)
 	for opt,arg in opts:
 		if opt == "-h":
-			print("soundcloud-scraper.py -t <tag> -n <number>")
+			print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory>")
 			sys.exit()
 		elif opt in ("-t","--tag"):
 			tag = arg
 		elif opt in ("-n","--number"):
 			number = arg
-	scrape(tag)
+		elif opt in ("-o","--output"):
+			outputDirectory = arg
+	scrape(tag, number, outputDirectory)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
