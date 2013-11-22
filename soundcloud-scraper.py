@@ -7,12 +7,9 @@ import json
 # - Have a list of previously downloaded songs
 # - Output directory
 
-
-# https://api.soundcloud.com/explore/v2/electronic
-# https://api.soundcloud.com/explore/v2/electronic?limit=100&offset=0
-# https://api.soundcloud.com/i1/tracks/120859378/streams?client_id=b45b1aa10f1ac2941910a7f0d10f8e28&app_version=fc06c6b8
-# need the correct client_id
 def scrape(tag, number, outputDirectory):
+	# We need to find this every time.
+	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 	url = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
 	print url
 	page = urllib2.urlopen(url)
@@ -21,8 +18,20 @@ def scrape(tag, number, outputDirectory):
 	for item in decoded["docs"]:
 		trackId =  item["urn"].split(":")[2]
 		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
-			"/streams?client_id=")
-		print(trackUrl)
+			"/streams?client_id=" + clientId)
+		page = urllib2.urlopen(trackUrl)
+		trackData = page.read()	
+		trackData = json.loads(trackData)
+		track = ''
+		try:
+			track = trackData["http_mp3_128_url"]
+		except:
+			print(str(trackId) + " does not have http")
+
+		if track != '':
+			download(track, outputDirectory)
+
+def download(trackUrl, outputDirectory):
 
 def main(argv):
 	tag = ''
