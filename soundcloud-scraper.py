@@ -1,6 +1,7 @@
 import getopt
 import sys
 import urllib2
+import json
 
 #TODO
 # - Have a list of previously downloaded songs
@@ -10,11 +11,18 @@ import urllib2
 # https://api.soundcloud.com/explore/v2/electronic
 # https://api.soundcloud.com/explore/v2/electronic?limit=100&offset=0
 # https://api.soundcloud.com/i1/tracks/120859378/streams?client_id=b45b1aa10f1ac2941910a7f0d10f8e28&app_version=fc06c6b8
+# need the correct client_id
 def scrape(tag, number, outputDirectory):
-	url = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + number
+	url = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
+	print url
 	page = urllib2.urlopen(url)
 	data = page.read()
-	print data
+	decoded = json.loads(data)
+	for item in decoded["docs"]:
+		trackId =  item["urn"].split(":")[2]
+		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
+			"/streams?client_id=")
+		print(trackUrl)
 
 def main(argv):
 	tag = ''
