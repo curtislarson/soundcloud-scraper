@@ -7,31 +7,46 @@ import json
 # - Have a list of previously downloaded songs
 # - Output directory
 
+#
+# format for finding title
+
 def scrape(tag, number, outputDirectory):
 	# We need to find this every time.
 	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
-	url = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
-	print url
-	page = urllib2.urlopen(url)
-	data = page.read()
-	decoded = json.loads(data)
-	for item in decoded["docs"]:
+	exploreUrl = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
+	explorePage = urllib2.urlopen(exploreUrl)
+
+	trackLinks = explorePage.read()
+	trackLinks = json.loads(trackLinks)
+	for item in trackLinks["docs"]:
 		trackId =  item["urn"].split(":")[2]
 		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
 			"/streams?client_id=" + clientId)
-		page = urllib2.urlopen(trackUrl)
-		trackData = page.read()	
+		trackPage = urllib2.urlopen(trackUrl)
+		trackData = trackPage.read()	
 		trackData = json.loads(trackData)
-		track = ''
+		trackDownloadUrl = ''
 		try:
-			track = trackData["http_mp3_128_url"]
+			trackDownloadUrl = trackData["http_mp3_128_url"]
 		except:
 			print(str(trackId) + " does not have http")
 
-		if track != '':
-			download(track, outputDirectory)
+		if trackDownloadUrl != '':
+			title = getTitle(trackId, clientId)
+			download(trackDownloadUrl, title, outputDirectory)
 
-def download(trackUrl, outputDirectory):
+def getTitle(trackId, clientId):
+	url = ("https://api.soundcloud.com/tracks/" + str(trackId) +
+		".json?client_id=" + clientId)
+	infoPage = urllib2.urlopen(url)
+	info = infoPage.read()
+	info = json.loads(info)
+
+	title = info["title"]
+	return title
+
+def download(trackUrl, title, outputDirectory):
+	print (trackUrl)
 
 def main(argv):
 	tag = ''
