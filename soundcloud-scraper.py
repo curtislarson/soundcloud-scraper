@@ -46,7 +46,11 @@ def getTitle(trackId, clientId):
 	return title
 
 def download(trackUrl, title, outputDirectory):
-	print (trackUrl)
+	print("Downloading " + trackUrl)
+	trackFile = urllib2.urlopen(trackUrl)
+	data = trackFile.read()
+	with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
+		mp3.write(data)
 
 def main(argv):
 	tag = ''
