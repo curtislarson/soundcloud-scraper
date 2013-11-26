@@ -2,6 +2,8 @@ import getopt
 import sys
 import urllib2
 import json
+from os import listdir
+from os.path import isfile, join
 
 #TODO
 # - Have a list of previously downloaded songs
@@ -15,6 +17,8 @@ def scrape(tag, number, outputDirectory):
 	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 	exploreUrl = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
 	explorePage = urllib2.urlopen(exploreUrl)
+
+	files = getFilesInDirectory(outputDirectory)
 
 	trackLinks = explorePage.read()
 	trackLinks = json.loads(trackLinks)
@@ -33,7 +37,10 @@ def scrape(tag, number, outputDirectory):
 
 		if trackDownloadUrl != '':
 			title = getTitle(trackId, clientId)
-			download(trackDownloadUrl, title, outputDirectory)
+			if (title + ".mp3") not in files:
+				download(trackDownloadUrl, title, outputDirectory)
+			else:
+				print("Skipping " + title)
 
 def getTitle(trackId, clientId):
 	url = ("https://api.soundcloud.com/tracks/" + str(trackId) +
@@ -45,8 +52,12 @@ def getTitle(trackId, clientId):
 	title = info["title"]
 	return title
 
+def getFilesInDirectory(directory):
+	files = [ f for f in listdir(directory) if isfile(join(directory, f))]
+	return files
+
 def download(trackUrl, title, outputDirectory):
-	print("Downloading " + trackUrl)
+	print("Downloading " + title)
 	trackFile = urllib2.urlopen(trackUrl)
 	data = trackFile.read()
 	with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
