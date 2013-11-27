@@ -6,16 +6,13 @@ from os import listdir
 from os.path import isfile, join
 
 #TODO
-# - Have a list of previously downloaded songs
-# - Output directory
+# - Prevent gateway timeout
 
-#
-# format for finding title
-
-def scrape(tag, number, outputDirectory):
+def scrape(tag, number, offset, outputDirectory):
 	# We need to find this every time.
 	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
-	exploreUrl = "https://api.soundcloud.com/explore/v2/" + tag + "?limit=" + str(number)
+	exploreUrl = ("https://api.soundcloud.com/explore/v2/" + tag + 
+		"?limit=" + str(number) + "&offset=" + offset)
 	explorePage = urllib2.urlopen(exploreUrl)
 
 	files = getFilesInDirectory(outputDirectory)
@@ -63,18 +60,27 @@ def download(trackUrl, title, outputDirectory):
 	with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
 		mp3.write(data)
 
+def printUsage():
+	print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory> "
+		"-f <offset>")
+
+
 def main(argv):
 	tag = ''
 	number = 100
 	outputDirectory = "~/"
+	offset = 0
 	try:
-		opts,args = getopt.getopt(argv, "t:n:o:", ["tag=","number=","output="])
+		opts,args = getopt.getopt(argv, "t:n:o:f:", ["tag=",
+													 "number=",
+													 "output=",
+													 "offset="])
 	except getopt.GetoptError:
-		print("soundcloud-scraper.py -t <tag> -n <number>")
+		printUsage()
 		sys.exit(2)
 	for opt,arg in opts:
 		if opt == "-h":
-			print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory>")
+			printUsage()
 			sys.exit()
 		elif opt in ("-t","--tag"):
 			tag = arg
@@ -82,7 +88,9 @@ def main(argv):
 			number = arg
 		elif opt in ("-o","--output"):
 			outputDirectory = arg
-	scrape(tag, number, outputDirectory)
+		elif opt in ("-f","--offset"):
+			offset = arg
+	scrape(tag, number, offset, outputDirectory)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
