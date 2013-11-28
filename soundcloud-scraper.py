@@ -55,10 +55,14 @@ def getFilesInDirectory(directory):
 
 def download(trackUrl, title, outputDirectory):
 	print("Downloading " + title)
-	trackFile = urllib2.urlopen(trackUrl)
+	user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
+	headers = { 'User-Agent' : user_agent }
+
+	trackFile = urllib2.urlopen(trackUrl, headers=headers)
 	data = trackFile.read()
-	with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
-		mp3.write(data)
+	if data.getCode() == 200:
+		with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
+			mp3.write(data)
 
 def printUsage():
 	print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory> "
