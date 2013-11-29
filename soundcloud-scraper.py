@@ -47,11 +47,30 @@ def scrapeSearch(searchTerm, number, offset, outputDirectory):
 	searchPage = urllib2.urlopen(searchUrl)
 	searchPage = searchPage.read()
 	searchPage = json.loads(searchPage)
+
+	files = getFilesInDirectory(outputDirectory)
+
 	#print(searchPage)
 	for item in searchPage["collection"]:
 		trackId = item["id"]
 		title = item["title"]
-		print(title)
+
+		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
+			"/streams?client_id=" + clientId)
+		trackPage = urllib2.urlopen(trackUrl)
+		trackPage = trackPage.read()
+		trackPage = json.loads(trackPage)
+		trackDownloadUrl = ''
+		try:
+			trackDownloadUrl = trackPage["http_mp3_128_url"]
+		except:
+			print(str(trackId) + " does not have http")
+		if trackDownloadUrl != '':
+			if (title + ".mp3") not in files:
+				download(trackDownloadUrl, title, outputDirectory)
+			else:
+				print("Skipping " + title)
+
 
 def getTitle(trackId, clientId):
 	url = ("https://api.soundcloud.com/tracks/" + str(trackId) +
@@ -69,14 +88,11 @@ def getFilesInDirectory(directory):
 
 def download(trackUrl, title, outputDirectory):
 	print("Downloading " + title)
-	user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-	headers = { 'User-Agent' : user_agent }
 
-	trackFile = urllib2.urlopen(trackUrl, headers=headers)
+	trackFile = urllib2.urlopen(trackUrl)
 	data = trackFile.read()
-	if data.getCode() == 200:
-		with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
-			mp3.write(data)
+	with open (outputDirectory + "/" + title + ".mp3", "wb") as mp3:
+		mp3.write(data)
 
 def printUsage():
 	print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory> "
