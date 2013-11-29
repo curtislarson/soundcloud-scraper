@@ -8,7 +8,7 @@ from os.path import isfile, join
 #TODO
 # - Prevent gateway timeout
 
-def scrape(tag, number, offset, outputDirectory):
+def scrapeTag(tag, number, offset, outputDirectory):
 	# We need to find this every time.
 	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 	exploreUrl = ("https://api.soundcloud.com/explore/v2/" + tag + 
@@ -38,6 +38,20 @@ def scrape(tag, number, offset, outputDirectory):
 				download(trackDownloadUrl, title, outputDirectory)
 			else:
 				print("Skipping " + title)
+
+def scrapeSearch(searchTerm, number, offset, outputDirectory):
+	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
+	searchUrl = ("https://api.soundcloud.com/search/sounds?q=" + searchTerm +
+		"&facet=genre&limit=" + str(number) + "&offset=" + str(offset) 
+		+ "&client_id=" + clientId)
+	searchPage = urllib2.urlopen(searchUrl)
+	searchPage = searchPage.read()
+	searchPage = json.loads(searchPage)
+	#print(searchPage)
+	for item in searchPage["collection"]:
+		trackId = item["id"]
+		title = item["title"]
+		print(title)
 
 def getTitle(trackId, clientId):
 	url = ("https://api.soundcloud.com/tracks/" + str(trackId) +
@@ -74,11 +88,13 @@ def main(argv):
 	number = 100
 	outputDirectory = "~/"
 	offset = 0
+	searchTerm = ''
 	try:
-		opts,args = getopt.getopt(argv, "t:n:o:f:", ["tag=",
-													 "number=",
-													 "output=",
-													 "offset="])
+		opts,args = getopt.getopt(argv, "t:n:o:f:s:", ["tag=",
+													   "number=",
+													   "output=",
+													   "offset=",
+													   "searchTerm="])
 	except getopt.GetoptError:
 		printUsage()
 		sys.exit(2)
@@ -94,7 +110,12 @@ def main(argv):
 			outputDirectory = arg
 		elif opt in ("-f","--offset"):
 			offset = arg
-	scrape(tag, number, offset, outputDirectory)
+		elif opt in ("-s","--searchTerm"):
+			searchTerm = arg
+	if searchTerm != '':
+		scrapeSearch(searchTerm, number, offset, outputDirectory)
+	else:
+		scrapeTag(tag, number, offset, outputDirectory)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
