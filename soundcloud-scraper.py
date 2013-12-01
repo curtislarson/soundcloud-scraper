@@ -21,19 +21,14 @@ def scrapeTag(tag, number, offset, outputDirectory):
 	trackLinks = json.loads(trackLinks)
 	for item in trackLinks["docs"]:
 		trackId =  item["urn"].split(":")[2]
-		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
-			"/streams?client_id=" + clientId)
-		trackPage = urllib2.urlopen(trackUrl)
-		trackData = trackPage.read()	
-		trackData = json.loads(trackData)
-		trackDownloadUrl = ''
+		title = getTitle(trackId, clientId)
+		trackDownloadUrl = getDownloadLink(trackId, clientId)
 		try:
 			trackDownloadUrl = trackData["http_mp3_128_url"]
 		except:
 			print(str(trackId) + " does not have http")
 
 		if trackDownloadUrl != '':
-			title = getTitle(trackId, clientId)
 			if (title + ".mp3") not in files:
 				download(trackDownloadUrl, title, outputDirectory)
 			else:
@@ -50,27 +45,29 @@ def scrapeSearch(searchTerm, number, offset, outputDirectory):
 
 	files = getFilesInDirectory(outputDirectory)
 
-	#print(searchPage)
 	for item in searchPage["collection"]:
 		trackId = item["id"]
 		title = item["title"]
 
-		trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
-			"/streams?client_id=" + clientId)
-		trackPage = urllib2.urlopen(trackUrl)
-		trackPage = trackPage.read()
-		trackPage = json.loads(trackPage)
-		trackDownloadUrl = ''
-		try:
-			trackDownloadUrl = trackPage["http_mp3_128_url"]
-		except:
-			print(str(trackId) + " does not have http")
+		trackDownloadUrl = getDownloadLink(trackId, clientId)
 		if trackDownloadUrl != '':
 			if (title + ".mp3") not in files:
 				download(trackDownloadUrl, title, outputDirectory)
 			else:
 				print("Skipping " + title)
 
+def getDownloadLink(trackId, clientId):
+	trackUrl = ("https://api.soundcloud.com/i1/tracks/" + str(trackId) + 
+		"/streams?client_id=" + clientId)
+	trackPage = urllib2.urlopen(trackUrl)
+	trackPage = trackPage.read()
+	trackPage = json.loads(trackPage)
+	trackDownloadUrl = ''
+	try:
+		trackDownloadUrl = trackPage["http_mp3_128_url"]
+	except:
+		print(str(trackId) + " does not have http")
+	return trackDownloadUrl
 
 def getTitle(trackId, clientId):
 	url = ("https://api.soundcloud.com/tracks/" + str(trackId) +
