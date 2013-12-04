@@ -117,8 +117,8 @@ def chunkRead(response, output, chunk_size=8192, report_hook=None):
 	return bytes_so_far
 
 def printUsage():
-	print("soundcloud-scraper.py -t <tag> -n <number> -o <outputDirectory> "
-		"-f <offset>")
+	print("soundcloud-scraper.py [-t <tag> -s <searchTerm>] -n <number> -o "
+		+ "<outputDirectory> -f <offset>")
 
 
 def main(argv):
