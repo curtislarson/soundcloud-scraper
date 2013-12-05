@@ -5,12 +5,13 @@ import json
 from os import listdir
 from os.path import isfile, join
 
+clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
+
 #TODO
 # - Prevent gateway timeout
 
 def scrapeTag(tag, number, offset, outputDirectory):
 	# We need to find this every time.
-	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 	exploreUrl = ("https://api.soundcloud.com/explore/v2/" + tag + 
 		"?limit=" + str(number) + "&offset=" + offset)
 	explorePage = urllib2.urlopen(exploreUrl)
@@ -35,7 +36,6 @@ def scrapeTag(tag, number, offset, outputDirectory):
 				print("Skipping " + title)
 
 def scrapeSearch(searchTerm, number, offset, outputDirectory):
-	clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 	searchUrl = ("https://api.soundcloud.com/search/sounds?q=" + searchTerm +
 		"&facet=genre&limit=" + str(number) + "&offset=" + str(offset) 
 		+ "&client_id=" + clientId)
