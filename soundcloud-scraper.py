@@ -2,6 +2,7 @@ import getopt
 import sys
 import urllib2
 import json
+import re
 from os import listdir
 from os.path import isfile, join
 
@@ -13,7 +14,7 @@ clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
 def scrapeTag(tag, number, offset, outputDirectory):
 	# We need to find this every time.
 	exploreUrl = ("https://api.soundcloud.com/explore/v2/" + tag + 
-		"?limit=" + str(number) + "&offset=" + offset)
+		"?limit=" + str(number) + "&offset=" + str(offset))
 	explorePage = urllib2.urlopen(exploreUrl)
 
 	files = getFilesInDirectory(outputDirectory)
@@ -116,12 +117,20 @@ def chunkRead(response, output, chunk_size=8192, report_hook=None):
 				report_hook(bytes_so_far, chunk_size, total_size)
 	return bytes_so_far
 
+def getClientId():
+	url = "https://www.soundcloud.com/explore"
+	page = urllib2.urlopen(url)
+	page = page.read()
+	m = re.search("<script src=(.+).js\">", page)
+	print(m.group(0))
+
 def printUsage():
 	print("soundcloud-scraper.py [-t <tag> -s <searchTerm>] -n <number> -o "
 		+ "<outputDirectory> -f <offset>")
 
 
 def main(argv):
+
 	tag = ''
 	number = 100
 	outputDirectory = "~/"
