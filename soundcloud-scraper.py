@@ -122,7 +122,15 @@ def getClientId():
 	page = urllib2.urlopen(url)
 	page = page.read()
 	m = re.search("<script src=(.+).js\">", page)
-	print(m.group(0))
+	match = m.group(0)
+	idx = 2
+	idx = match.index("<script src=", idx, len(match))
+	idx = match.index("<script src=", idx + 1, len(match))
+	jsUrl = match[idx + 13:len(match) - 2]
+
+	page = urllib2.urlopen(jsUrl)
+	page = page.read()
+	print(page)
 
 def printUsage():
 	print("soundcloud-scraper.py [-t <tag> -s <searchTerm>] -n <number> -o "
@@ -130,7 +138,6 @@ def printUsage():
 
 
 def main(argv):
-
 	tag = ''
 	number = 100
 	outputDirectory = "~/"
