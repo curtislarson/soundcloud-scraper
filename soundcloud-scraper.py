@@ -6,12 +6,10 @@ import re
 from os import listdir
 from os.path import isfile, join
 
-clientId = "b45b1aa10f1ac2941910a7f0d10f8e28"
-
 #TODO
 # - Prevent gateway timeout
 
-def scrapeTag(tag, number, offset, outputDirectory):
+def scrapeTag(tag, number, offset, outputDirectory, clientId):
 	# We need to find this every time.
 	exploreUrl = ("https://api.soundcloud.com/explore/v2/" + tag + 
 		"?limit=" + str(number) + "&offset=" + str(offset))
@@ -36,7 +34,7 @@ def scrapeTag(tag, number, offset, outputDirectory):
 			else:
 				print("Skipping " + title)
 
-def scrapeSearch(searchTerm, number, offset, outputDirectory):
+def scrapeSearch(searchTerm, number, offset, outputDirectory, clientId):
 	searchUrl = ("https://api.soundcloud.com/search/sounds?q=" + searchTerm +
 		"&facet=genre&limit=" + str(number) + "&offset=" + str(offset) 
 		+ "&client_id=" + clientId)
@@ -130,7 +128,12 @@ def getClientId():
 
 	page = urllib2.urlopen(jsUrl)
 	page = page.read()
-	print(page)
+	m = re.search("r=\"(.+)\",a", page)
+	match = m.group(0)
+	print(match)
+	clientId = match[3:len(match) - 3]
+	print(clientId)
+	return clientId
 
 def printUsage():
 	print("soundcloud-scraper.py [-t <tag> -s <searchTerm>] -n <number> -o "
@@ -138,6 +141,7 @@ def printUsage():
 
 
 def main(argv):
+	clientId = getClientId()
 	tag = ''
 	number = 100
 	outputDirectory = "~/"
@@ -167,9 +171,9 @@ def main(argv):
 		elif opt in ("-s","--searchTerm"):
 			searchTerm = arg
 	if searchTerm != '':
-		scrapeSearch(searchTerm, number, offset, outputDirectory)
+		scrapeSearch(searchTerm, number, offset, outputDirectory, clientId)
 	else:
-		scrapeTag(tag, number, offset, outputDirectory)
+		scrapeTag(tag, number, offset, outputDirectory, clientId)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
